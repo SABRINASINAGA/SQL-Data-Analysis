@@ -1,0 +1,88 @@
+#The Most Written Rock Music
+
+SELECT an.Artistid, s.name,count(*) as Song
+FROM Track t
+JOIN Album an
+ON t.Albumid = an.Albumid
+JOIN Artist s
+ON an.Artistid = s.ArtistId
+JOIN Genre g
+ON g.genreid = t.genreid
+GROUP BY 1, 2
+HAVING g.name = 'Rock'
+ORDER By 3 DESC
+LIMIT 10;
+
+#Customer with the Highest Total Invoice Amount
+
+SELECT s.Name AS artist_name,
+               SUM(il.Quantity * il.UnitPrice)   AS AmountSpent,
+               c.CustomerId    AS customerId,
+               c.FirstName||' '||c.LastName AS customer_name
+FROM Artist s 
+JOIN Album an 
+    ON s.ArtistId = an.ArtistId 
+JOIN Track t 
+    ON t.AlbumId = an.AlbumId 
+JOIN InvoiceLine il 
+    ON t.TrackId = il.Trackid 
+JOIN Invoice i 
+    ON il.InvoiceId = i.InvoiceId 
+JOIN Customer c 
+    ON c.CustomerId = i.CustomerId 
+WHERE s.Name = 'Iron Maiden' 
+GROUP BY c.CustomerId 
+ORDER BY AmountSpent DESC;
+
+#The Most Popular Genre
+
+Select max(purchase) as Purchases, ref.BillingCountry, ref.Name, ref.GenreId
+From (SELECT i.BillingCountry,g.Name,g.GenreId ,count(i.InvoiceId) as purchase
+From invoice i
+
+Join InvoiceLine il
+ON i.InvoiceId= il.InvoiceId
+
+Join track t
+ON t.TrackId = il.TrackId
+
+Join Genre g
+ON g.GenreId = t.GenreId
+
+Group by i.BillingCountry, g.name,3
+
+Order by 4 desc) as ref
+
+Group by ref.BillingCountry
+Order by 1
+
+#Top Customer Spent Music For Each Country
+
+WITH t1 AS
+  (SELECT Customer.CustomerId,
+          Customer.FirstName,
+          Customer.LastName,
+          Customer.Country,
+          SUM(Invoice.Total) AS sum_total
+   FROM Customer
+   JOIN Invoice 
+   ON Invoice.CustomerId = Customer.CustomerId
+   GROUP BY 1,2,3,4),                      
+   
+     t2 AS
+  (SELECT Country,
+          MAX(sum_total) AS max_sum_total
+   FROM t1
+   GROUP BY 1)
+   
+SELECT t1.Country,
+       t1.FirstName,
+       t1.LastName,
+       t1.CustomerId,
+       t1.sum_total                        
+FROM t1
+JOIN t2 
+ON t1.Country = t2.Country
+  AND t1.Country = t2.Country
+  AND t1.sum_total = t2.max_sum_total      
+ORDER BY 1
